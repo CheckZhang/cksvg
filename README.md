@@ -6,7 +6,7 @@ Base on jquery;
 
 example:
 ```
-//create stage
+//first, create stage using jquery
 var stage = new cksvg.Stage($("#stage"));
 
 //polygon example
@@ -48,11 +48,30 @@ stage.addChild(polyline);
 
 //path example
 var path = new cksvg.Path();
-path.moveTo(0,0).lineTo(50,50).lineTo(100,50).closePath();
+path.moveTo(0,0).lineTo(20,20).curveTo(90,40,130,40,180,20).smoothCurveTo(250,60,280,20).ellipticalArc(100,50,300,50)
+path.y = 300;
+path.x = 20;
 stage.addChild(path);
 
-//other styles example
-path.dom().css("color","#FFF");
+//text example
+var text = new cksvg.Text("This is test text.");
+text.x = 500;
+text.y = 20;
+stage.addChild(text);
 
+
+//group example
+var g = new cksvg.Group();
+var rect1 = new cksvg.Rect(100,50);
+g.addChild(rect1);
+var text1 = new cksvg.Text("This is Group test.");
+text1.y = 60;
+g.addChild(text1);
+g.x = 500;
+g.y = 100;
+g.rotation = 30;
+stage.addChild(g);
+
+//render finally
 stage.render();
 ```
