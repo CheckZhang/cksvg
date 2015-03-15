@@ -3,14 +3,21 @@
  */
 module cksvg{
     var formatRegExp = /\{(\d+)(:[^\}]+)?\}/g;
-    export function format(fmt:string):string{
+    export function format(fmt:string,...args):string{
         var values = arguments;
         return fmt.replace(formatRegExp, function(match, index, placeholderFormat) {
             var value = values[parseInt(index, 10) + 1];
             return value.toString();
         });
     }
-
+    export function formatPoints(points:number[][]):string{
+        var temp:string[]=[];
+        for(var i in points){
+            var p:number[] = points[i];
+            temp.push( p.join(" "));
+        }
+        return temp.join(",");
+    }
 
     var SVG_NS = "http://www.w3.org/2000/svg";
     var XLINK_NS = "http://www.w3.org/1999/xlink";

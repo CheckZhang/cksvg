@@ -6,76 +6,54 @@
 ///<reference path="b0__Core.ts"/>
 ///<reference path="c1__Container.ts"/>
 module cksvg{
-    class Graphic{
-        public type:string;
-        public points:Vec2[];
-        constructor(type:string,points:Vec2[]){
-            this.type = type;
-            this.points = points;
-
-        }
-
-        public toString():string{
-            for(var i in this.points){
-                var p:Vec2 = this.points[i];
-                return this.type+p[0]+" "+p[1];
-            }
-        }
-    }
-
     export class Path extends DisplayObject{
-        public fill:string;
-        public stroke:string;
-        public strokeWidth:number;
-        private _graphics:Graphic[]=[];
         constructor(fill:string="blue",stroke:string="red",strokeWidth:number=1){
             super();
-            this.fill = fill;
-            this.stroke = stroke;
-            this.strokeWidth = strokeWidth;
-            this._$dom = $(cksvg.makeSVG("path"));
+            this._$dom = $(cksvg.makeSVG("path")).attr({d:""}).css({fill:fill,stroke:stroke,strokeWidth:strokeWidth});
         }
-
-        private formatPoints():string{
-            var temp:string[]=[];
-            for(var i in this._graphics){
-                var c:Graphic = this._graphics[i];
-                temp.push(c.toString());
-            }
-            return temp.join(" ");
+        public clear():cksvg.Path{
+            this._$dom.attr("d","");
+            return this;
         }
-
         public moveTo(x:number,y:number):cksvg.Path{
-            this._graphics.push(new Graphic("M",[vec2.fromValues(x,y)]));
+            this._$dom.attr("d",this._$dom.attr("d")+" M"+cksvg.formatPoints([[x,y]]));
             return this;
         }
         public lineTo(x:number,y:number):cksvg.Path{
-            this._graphics.push(new Graphic("L",[vec2.fromValues(x,y)]));
+            this._$dom.attr("d",this._$dom.attr("d")+" L"+cksvg.formatPoints([[x,y]]));
             return this;
         }
-        public curveTo(x1:number,y1:number,x2:number,y2:number,x3:number,y3:number):cksvg.Path{
-            this._graphics.push(new Graphic("C",[vec2.fromValues(x1,y1),vec2.fromValues(x2,y2),vec2.fromValues(x3,y3)]))
+        public ellipticalArc(rx:number,ry:number,x:number,y:number,xAxisRotation:number=0,largeArcFlag:boolean=false,sweepFlag:boolean=true):cksvg.Path{
+            this._$dom.attr("d",this._$dom.attr("d")+" A"+rx+" "+ry+" "+xAxisRotation+" "+(largeArcFlag?1:0)+" "+(sweepFlag?1:0)+" "+x+" "+y);
             return this;
         }
-        public smoothCurveTo(x1:number,y1:number,x2:number,y2:number,x3:number,y3:number):cksvg.Path{
-            this._graphics.push(new Graphic("S",[vec2.fromValues(x1,y1),vec2.fromValues(x2,y2),vec2.fromValues(x3,y3)]))
+        public curveTo(x1:number,y1:number,x2:number,y2:number,x:number,y:number):cksvg.Path{
+            this._$dom.attr("d",this._$dom.attr("d")+" C"+cksvg.formatPoints([[x1,y1],[x2,y2],[x,y]]));
             return this;
         }
-        public quadraticBelzierCurve(x1:number,y1:number,x2:number,y2:number,x3:number,y3:number):cksvg.Path{
-            this._graphics.push(new Graphic("Q",[vec2.fromValues(x1,y1),vec2.fromValues(x2,y2),vec2.fromValues(x3,y3)]))
+        public smoothCurveTo(x2:number,y2:number,x:number,y:number):cksvg.Path{
+            this._$dom.attr("d",this._$dom.attr("d")+" S"+cksvg.formatPoints([[x2,y2],[x,y]]));
             return this;
         }
-        public smoothQuadraticBelzierCurveTo(x1:number,y1:number,x2:number,y2:number,x3:number,y3:number):cksvg.Path{
-            this._graphics.push(new Graphic("T",[vec2.fromValues(x1,y1),vec2.fromValues(x2,y2),vec2.fromValues(x3,y3)]))
+        public quadraticBelzierCurve(x1:number,y1:number,x2:number,y2:number,x:number,y:number):cksvg.Path{
+            this._$dom.attr("d",this._$dom.attr("d")+" Q"+cksvg.formatPoints([[x1,y1],[x2,y2],[x,y]]));
+            return this;
+        }
+        public smoothQuadraticBelzierCurveTo(x1:number,y1:number,x2:number,y2:number,x:number,y:number):cksvg.Path{
+            this._$dom.attr("d",this._$dom.attr("d")+" T"+cksvg.formatPoints([[x1,y1],[x2,y2],[x,y]]));
+            return this;
+        }
+        public horizontalLineTo(x:number):cksvg.Path{
+            this._$dom.attr("d",this._$dom.attr("d")+" H"+x);
+            return this;
+        }
+        public verticalLineTo(y:number):cksvg.Path{
+            this._$dom.attr("d",this._$dom.attr("d")+" V"+y);
             return this;
         }
         public closePath():cksvg.Path{
-            this._graphics.push(new Graphic("Z",[]));
+            this._$dom.attr("d",this._$dom.attr("d")+" Z");
             return this;
-        }
-        public render(gMatrix?:Mat2d):void{
-            super.render(gMatrix);
-            this._$dom.attr("d",this.formatPoints()).css({fill:this.fill,stroke:this.stroke,"stroke-width":this.strokeWidth,opacity:this.opacity});
         }
     }
 }

@@ -7,33 +7,9 @@
 ///<reference path="c1__Container.ts"/>
 module cksvg{
     export class Polyline extends DisplayObject{
-        public points:number[][] = [];
-        public fill:string;
-        public stroke:string;
-        public strokeWidth:number;
         constructor(points:number[][],fill:string="none",stroke:string="red",strokeWidth?:number){
             super();
-            this.points = points;
-            this.fill = fill;
-            this.stroke = stroke;
-            this.strokeWidth = strokeWidth;
-            this._$dom = $(cksvg.makeSVG("polyline"));
-        }
-
-        private formatPoints():string{
-            var temp:string[]=[];
-            for(var i in this.points){
-                var p:number[] = this.points[i];
-                var v:Vec2 = vec2.fromValues(p[0],p[1]);
-                vec2.transformMat2d(v,v,this._sumMatrix);
-                temp.push( v[0]+","+v[1]);
-            }
-            return temp.join(" ");
-        }
-
-        public render(gMatrix?:Mat2d):void{
-            super.render(gMatrix);
-            this._$dom.attr("points",this.formatPoints()).css({fill:this.fill,stroke:this.stroke,"stroke-width":this.strokeWidth,opacity:this.opacity});
+            this._$dom = $(cksvg.makeSVG("polyline")).attr("points",cksvg.formatPoints(points)).css({fill:fill,stroke:stroke,"stroke-width":strokeWidth});
         }
     }
 }

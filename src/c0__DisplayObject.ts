@@ -21,7 +21,11 @@ module cksvg{
             mat2d.translate(matrix,matrix,vec2.fromValues(this.x,this.y));
             mat2d.rotate(matrix,matrix,this.rotation*Math.PI/180);
             mat2d.scale(matrix,matrix,vec2.fromValues(this.scaleX,this.scaleY));
-            if(gMatrix) mat2d.multiply(this._sumMatrix,gMatrix,this._matrix);
+            //if(gMatrix) mat2d.multiply(this._sumMatrix,gMatrix,this._matrix);
+            this._$dom.attr({
+                transform:cksvg.format("matrix({0},{1},{2},{3},{4},{5})",this._matrix[0],this._matrix[1],this._matrix[2],this._matrix[3],this._matrix[4],this._matrix[5]),
+                opacity:this.opacity==1?null:this.opacity
+            });
         }
 
         public dom():JQuery{

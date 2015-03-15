@@ -9,6 +9,8 @@
 ///<reference path="../src/c7__Ellipse.ts"/>
 ///<reference path="../src/c8__Polyline.ts"/>
 ///<reference path="../src/c9__Path.ts"/>
+///<reference path="../src/c90__Text.ts"/>
+///<reference path="../src/c91__Group.ts"/>
 var stage = new cksvg.Stage($("#stage"));
 var polygon = new cksvg.Polygon([[0, 0], [100, 0], [100, 100], [0, 100]], "#ff0000", "#00ff00", 2);
 polygon.x = 100;
@@ -36,9 +38,24 @@ polyline.x = 300;
 polyline.y = 200;
 stage.addChild(polyline);
 var path = new cksvg.Path();
-path.moveTo(0, 0).lineTo(50, 50).lineTo(100, 50).closePath();
+path.moveTo(0, 0).lineTo(20, 20).curveTo(90, 40, 130, 40, 180, 20).smoothCurveTo(250, 60, 280, 20).ellipticalArc(100, 50, 300, 50);
+path.y = 300;
+path.x = 20;
 stage.addChild(path);
-//other styles example
-path.dom().css("color", "#FFF");
+var text = new cksvg.Text("This is test text.");
+text.x = 500;
+text.y = 20;
+stage.addChild(text);
+//group test
+var g = new cksvg.Group();
+var rect1 = new cksvg.Rect(100, 50);
+g.addChild(rect1);
+var text1 = new cksvg.Text("This is Group test.");
+text1.y = 60;
+g.addChild(text1);
+g.x = 500;
+g.y = 100;
+g.rotation = 30;
+stage.addChild(g);
 stage.render();
 //# sourceMappingURL=DisplayObjectsTest.js.map

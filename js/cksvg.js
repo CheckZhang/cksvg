@@ -5,6 +5,10 @@ var cksvg;
 (function (cksvg) {
     var formatRegExp = /\{(\d+)(:[^\}]+)?\}/g;
     function format(fmt) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
         var values = arguments;
         return fmt.replace(formatRegExp, function (match, index, placeholderFormat) {
             var value = values[parseInt(index, 10) + 1];
@@ -12,6 +16,15 @@ var cksvg;
         });
     }
     cksvg.format = format;
+    function formatPoints(points) {
+        var temp = [];
+        for (var i in points) {
+            var p = points[i];
+            temp.push(p.join(" "));
+        }
+        return temp.join(",");
+    }
+    cksvg.formatPoints = formatPoints;
     var SVG_NS = "http://www.w3.org/2000/svg";
     var XLINK_NS = "http://www.w3.org/1999/xlink";
     var ATTR_MAP = {
@@ -59,8 +72,11 @@ var cksvg;
             mat2d.translate(matrix, matrix, vec2.fromValues(this.x, this.y));
             mat2d.rotate(matrix, matrix, this.rotation * Math.PI / 180);
             mat2d.scale(matrix, matrix, vec2.fromValues(this.scaleX, this.scaleY));
-            if (gMatrix)
-                mat2d.multiply(this._sumMatrix, gMatrix, this._matrix);
+            //if(gMatrix) mat2d.multiply(this._sumMatrix,gMatrix,this._matrix);
+            this._$dom.attr({
+                transform: cksvg.format("matrix({0},{1},{2},{3},{4},{5})", this._matrix[0], this._matrix[1], this._matrix[2], this._matrix[3], this._matrix[4], this._matrix[5]),
+                opacity: this.opacity == 1 ? null : this.opacity
+            });
         };
         DisplayObject.prototype.dom = function () {
             return this._$dom;
@@ -169,27 +185,8 @@ var cksvg;
         __extends(Polygon, _super);
         function Polygon(points, fill, stroke, strokeWidth) {
             _super.call(this);
-            this.points = [];
-            this.points = points;
-            this.fill = fill;
-            this.stroke = stroke;
-            this.strokeWidth = strokeWidth;
-            this._$dom = $(cksvg.makeSVG("polygon"));
+            this._$dom = $(cksvg.makeSVG("polygon")).attr({ points: cksvg.formatPoints(points) }).css({ fill: fill, stroke: stroke, "stroke-width": strokeWidth });
         }
-        Polygon.prototype.formatPoints = function () {
-            var temp = [];
-            for (var i in this.points) {
-                var p = this.points[i];
-                var v = vec2.fromValues(p[0], p[1]);
-                vec2.transformMat2d(v, v, this._sumMatrix);
-                temp.push(v[0] + "," + v[1]);
-            }
-            return temp.join(" ");
-        };
-        Polygon.prototype.render = function (gMatrix) {
-            _super.prototype.render.call(this, gMatrix);
-            this._$dom.attr("points", this.formatPoints()).css({ fill: this.fill, stroke: this.stroke, "stroke-width": this.strokeWidth, opacity: this.opacity });
-        };
         return Polygon;
     })(cksvg.DisplayObject);
     cksvg.Polygon = Polygon;
@@ -209,30 +206,8 @@ var cksvg;
             if (stroke === void 0) { stroke = "#000"; }
             if (strokeWidth === void 0) { strokeWidth = 1; }
             _super.call(this);
-            this.x1 = 0;
-            this.y1 = 0;
-            this.x2 = 0;
-            this.y2 = 0;
-            this._start = vec2.create();
-            this._end = vec2.create();
-            this.x1 = x1;
-            this.y1 = y1;
-            this.x2 = x2;
-            this.y2 = y2;
-            this.stroke = stroke;
-            this.strokeWidth = strokeWidth;
-            this._$dom = $(cksvg.makeSVG("line"));
+            this._$dom = $(cksvg.makeSVG("line")).attr({ x1: x1, y1: y1, x2: x2, y2: y2 }).css({ stroke: stroke, "stroke-width": strokeWidth, opacity: this.opacity == 1 ? null : this.opacity });
         }
-        Line.prototype.render = function (gMatrix) {
-            _super.prototype.render.call(this, gMatrix);
-            this._start[0] = this.x1;
-            this._start[1] = this.y1;
-            this._end[0] = this.x2;
-            this._end[1] = this.y2;
-            vec2.transformMat2d(this._start, this._start, this._sumMatrix);
-            vec2.transformMat2d(this._end, this._end, this._sumMatrix);
-            this._$dom.attr({ x1: this._start[0], y1: this._start[1], x2: this._end[0], y2: this._end[1] }).css({ stroke: this.stroke, "stroke-width": this.strokeWidth, opacity: this.opacity });
-        };
         return Line;
     })(cksvg.DisplayObject);
     cksvg.Line = Line;
@@ -251,26 +226,8 @@ var cksvg;
         function Rect(width, height, fill, rx, ry, stroke, strokeWidth) {
             if (fill === void 0) { fill = "#BBBBBB"; }
             _super.call(this);
-            this.width = 0;
-            this.height = 0;
-            this.rx = 0;
-            this.ry = 0;
-            this._pos = vec2.create();
-            this.width = width;
-            this.height = height;
-            this.rx = rx;
-            this.ry = ry;
-            this.stroke = stroke;
-            this.strokeWidth = strokeWidth;
-            this._$dom = $(cksvg.makeSVG("rect"));
+            this._$dom = $(cksvg.makeSVG("rect")).attr({ width: width, height: height, rx: rx, ry: ry }).css({ fill: fill, stroke: stroke, "stroke-width": strokeWidth, opacity: this.opacity == 1 ? null : this.opacity });
         }
-        Rect.prototype.render = function (gMatrix) {
-            _super.prototype.render.call(this, gMatrix);
-            this._pos[0] = this.x;
-            this._pos[1] = this.y;
-            vec2.transformMat2d(this._pos, this._pos, gMatrix);
-            this._$dom.attr({ width: this.width, height: this.height, x: this._pos[0], y: this._pos[1], rx: this.rx, ry: this.ry }).css({ fill: this.fill, stroke: this.stroke, "stroke-width": this.strokeWidth, opacity: this.opacity });
-        };
         return Rect;
     })(cksvg.DisplayObject);
     cksvg.Rect = Rect;
@@ -289,23 +246,8 @@ var cksvg;
         function Circle(r, cx, cy, fill, stroke, strokeWidth) {
             if (fill === void 0) { fill = "#BBBBBB"; }
             _super.call(this);
-            this.cx = 0;
-            this.cy = 0;
-            this._pos = vec2.create();
-            this.r = r;
-            this.cx = cx;
-            this.cy = cy;
-            this.stroke = stroke;
-            this.strokeWidth = strokeWidth;
-            this._$dom = $(cksvg.makeSVG("circle"));
+            this._$dom = $(cksvg.makeSVG("circle")).attr({ r: r, cx: cx, cy: cy }).css({ fill: fill, stroke: stroke, "stroke-width": strokeWidth, opacity: this.opacity == 1 ? null : this.opacity });
         }
-        Circle.prototype.render = function (gMatrix) {
-            _super.prototype.render.call(this, gMatrix);
-            this._pos[0] = this.cx;
-            this._pos[1] = this.cy;
-            vec2.transformMat2d(this._pos, this._pos, this._sumMatrix);
-            this._$dom.attr({ r: this.r, cx: this._pos[0], cy: this._pos[1] }).css({ fill: this.fill, stroke: this.stroke, "stroke-width": this.strokeWidth, opacity: this.opacity });
-        };
         return Circle;
     })(cksvg.DisplayObject);
     cksvg.Circle = Circle;
@@ -324,24 +266,8 @@ var cksvg;
         function Ellipse(rx, ry, cx, cy, fill, stroke, strokeWidth) {
             if (fill === void 0) { fill = "#BBBBBB"; }
             _super.call(this);
-            this.cx = 0;
-            this.cy = 0;
-            this._pos = vec2.create();
-            this.rx = rx;
-            this.ry = ry;
-            this.cx = cx;
-            this.cy = cy;
-            this.stroke = stroke;
-            this.strokeWidth = strokeWidth;
-            this._$dom = $(cksvg.makeSVG("ellipse"));
+            this._$dom = $(cksvg.makeSVG("ellipse")).attr({ rx: rx, ry: ry, cx: cx, cy: cy }).css({ fill: fill, stroke: stroke, "stroke-width": strokeWidth });
         }
-        Ellipse.prototype.render = function (gMatrix) {
-            _super.prototype.render.call(this, gMatrix);
-            this._pos[0] = this.cx;
-            this._pos[1] = this.cy;
-            vec2.transformMat2d(this._pos, this._pos, this._sumMatrix);
-            this._$dom.attr({ rx: this.rx, ry: this.ry, cx: this._pos[0], cy: this._pos[1] }).css({ fill: this.fill, stroke: this.stroke, "stroke-width": this.strokeWidth, opacity: this.opacity });
-        };
         return Ellipse;
     })(cksvg.DisplayObject);
     cksvg.Ellipse = Ellipse;
@@ -361,30 +287,42 @@ var cksvg;
             if (fill === void 0) { fill = "none"; }
             if (stroke === void 0) { stroke = "red"; }
             _super.call(this);
-            this.points = [];
-            this.points = points;
-            this.fill = fill;
-            this.stroke = stroke;
-            this.strokeWidth = strokeWidth;
-            this._$dom = $(cksvg.makeSVG("polyline"));
+            this._$dom = $(cksvg.makeSVG("polyline")).attr("points", cksvg.formatPoints(points)).css({ fill: fill, stroke: stroke, "stroke-width": strokeWidth });
         }
-        Polyline.prototype.formatPoints = function () {
-            var temp = [];
-            for (var i in this.points) {
-                var p = this.points[i];
-                var v = vec2.fromValues(p[0], p[1]);
-                vec2.transformMat2d(v, v, this._sumMatrix);
-                temp.push(v[0] + "," + v[1]);
-            }
-            return temp.join(" ");
-        };
-        Polyline.prototype.render = function (gMatrix) {
-            _super.prototype.render.call(this, gMatrix);
-            this._$dom.attr("points", this.formatPoints()).css({ fill: this.fill, stroke: this.stroke, "stroke-width": this.strokeWidth, opacity: this.opacity });
-        };
         return Polyline;
     })(cksvg.DisplayObject);
     cksvg.Polyline = Polyline;
+})(cksvg || (cksvg = {}));
+/**
+ * Created by Chack on 2015/3/15.
+ */
+var cksvg;
+(function (cksvg) {
+    var Text = (function (_super) {
+        __extends(Text, _super);
+        function Text(text, fill, stroke, strokeWidth, letterSpacing, wordSpacing, writingMode) {
+            if (fill === void 0) { fill = "red"; }
+            _super.call(this);
+            this._$dom = $(cksvg.makeSVG("text")).text(text).css({ fill: fill, stroke: stroke, "stroke-width": strokeWidth, "letter-spacing": letterSpacing, "word-spacing": wordSpacing, "writing-mode": writingMode });
+        }
+        return Text;
+    })(cksvg.DisplayObject);
+    cksvg.Text = Text;
+})(cksvg || (cksvg = {}));
+/**
+ * Created by Chack on 2015/3/15.
+ */
+var cksvg;
+(function (cksvg) {
+    var Group = (function (_super) {
+        __extends(Group, _super);
+        function Group() {
+            _super.call(this);
+            this._$dom = $(cksvg.makeSVG("g"));
+        }
+        return Group;
+    })(cksvg.Container);
+    cksvg.Group = Group;
 })(cksvg || (cksvg = {}));
 /**
  * Created by Chack on 2015/3/14.
@@ -395,19 +333,6 @@ var cksvg;
 ///<reference path="c1__Container.ts"/>
 var cksvg;
 (function (cksvg) {
-    var Graphic = (function () {
-        function Graphic(type, points) {
-            this.type = type;
-            this.points = points;
-        }
-        Graphic.prototype.toString = function () {
-            for (var i in this.points) {
-                var p = this.points[i];
-                return this.type + p[0] + " " + p[1];
-            }
-        };
-        return Graphic;
-    })();
     var Path = (function (_super) {
         __extends(Path, _super);
         function Path(fill, stroke, strokeWidth) {
@@ -415,51 +340,54 @@ var cksvg;
             if (stroke === void 0) { stroke = "red"; }
             if (strokeWidth === void 0) { strokeWidth = 1; }
             _super.call(this);
-            this._graphics = [];
-            this.fill = fill;
-            this.stroke = stroke;
-            this.strokeWidth = strokeWidth;
-            this._$dom = $(cksvg.makeSVG("path"));
+            this._$dom = $(cksvg.makeSVG("path")).attr({ d: "" }).css({ fill: fill, stroke: stroke, strokeWidth: strokeWidth });
         }
-        Path.prototype.formatPoints = function () {
-            var temp = [];
-            for (var i in this._graphics) {
-                var c = this._graphics[i];
-                temp.push(c.toString());
-            }
-            return temp.join(" ");
+        Path.prototype.clear = function () {
+            this._$dom.attr("d", "");
+            return this;
         };
         Path.prototype.moveTo = function (x, y) {
-            this._graphics.push(new Graphic("M", [vec2.fromValues(x, y)]));
+            this._$dom.attr("d", this._$dom.attr("d") + " M" + cksvg.formatPoints([[x, y]]));
             return this;
         };
         Path.prototype.lineTo = function (x, y) {
-            this._graphics.push(new Graphic("L", [vec2.fromValues(x, y)]));
+            this._$dom.attr("d", this._$dom.attr("d") + " L" + cksvg.formatPoints([[x, y]]));
             return this;
         };
-        Path.prototype.curveTo = function (x1, y1, x2, y2, x3, y3) {
-            this._graphics.push(new Graphic("C", [vec2.fromValues(x1, y1), vec2.fromValues(x2, y2), vec2.fromValues(x3, y3)]));
+        Path.prototype.ellipticalArc = function (rx, ry, x, y, xAxisRotation, largeArcFlag, sweepFlag) {
+            if (xAxisRotation === void 0) { xAxisRotation = 0; }
+            if (largeArcFlag === void 0) { largeArcFlag = false; }
+            if (sweepFlag === void 0) { sweepFlag = true; }
+            this._$dom.attr("d", this._$dom.attr("d") + " A" + rx + " " + ry + " " + xAxisRotation + " " + (largeArcFlag ? 1 : 0) + " " + (sweepFlag ? 1 : 0) + " " + x + " " + y);
             return this;
         };
-        Path.prototype.smoothCurveTo = function (x1, y1, x2, y2, x3, y3) {
-            this._graphics.push(new Graphic("S", [vec2.fromValues(x1, y1), vec2.fromValues(x2, y2), vec2.fromValues(x3, y3)]));
+        Path.prototype.curveTo = function (x1, y1, x2, y2, x, y) {
+            this._$dom.attr("d", this._$dom.attr("d") + " C" + cksvg.formatPoints([[x1, y1], [x2, y2], [x, y]]));
             return this;
         };
-        Path.prototype.quadraticBelzierCurve = function (x1, y1, x2, y2, x3, y3) {
-            this._graphics.push(new Graphic("Q", [vec2.fromValues(x1, y1), vec2.fromValues(x2, y2), vec2.fromValues(x3, y3)]));
+        Path.prototype.smoothCurveTo = function (x2, y2, x, y) {
+            this._$dom.attr("d", this._$dom.attr("d") + " S" + cksvg.formatPoints([[x2, y2], [x, y]]));
             return this;
         };
-        Path.prototype.smoothQuadraticBelzierCurveTo = function (x1, y1, x2, y2, x3, y3) {
-            this._graphics.push(new Graphic("T", [vec2.fromValues(x1, y1), vec2.fromValues(x2, y2), vec2.fromValues(x3, y3)]));
+        Path.prototype.quadraticBelzierCurve = function (x1, y1, x2, y2, x, y) {
+            this._$dom.attr("d", this._$dom.attr("d") + " Q" + cksvg.formatPoints([[x1, y1], [x2, y2], [x, y]]));
+            return this;
+        };
+        Path.prototype.smoothQuadraticBelzierCurveTo = function (x1, y1, x2, y2, x, y) {
+            this._$dom.attr("d", this._$dom.attr("d") + " T" + cksvg.formatPoints([[x1, y1], [x2, y2], [x, y]]));
+            return this;
+        };
+        Path.prototype.horizontalLineTo = function (x) {
+            this._$dom.attr("d", this._$dom.attr("d") + " H" + x);
+            return this;
+        };
+        Path.prototype.verticalLineTo = function (y) {
+            this._$dom.attr("d", this._$dom.attr("d") + " V" + y);
             return this;
         };
         Path.prototype.closePath = function () {
-            this._graphics.push(new Graphic("Z", []));
+            this._$dom.attr("d", this._$dom.attr("d") + " Z");
             return this;
-        };
-        Path.prototype.render = function (gMatrix) {
-            _super.prototype.render.call(this, gMatrix);
-            this._$dom.attr("d", this.formatPoints()).css({ fill: this.fill, stroke: this.stroke, "stroke-width": this.strokeWidth, opacity: this.opacity });
         };
         return Path;
     })(cksvg.DisplayObject);
