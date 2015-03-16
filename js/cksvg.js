@@ -325,6 +325,23 @@ var cksvg;
     cksvg.Group = Group;
 })(cksvg || (cksvg = {}));
 /**
+ * Created by Chack on 2015/3/16.
+ */
+var cksvg;
+(function (cksvg) {
+    var Image = (function (_super) {
+        __extends(Image, _super);
+        function Image(url, width, height) {
+            _super.call(this);
+            var temp = cksvg.makeSVG("image", { width: width, height: height });
+            temp["href"].baseVal = url;
+            this._$dom = $(temp);
+        }
+        return Image;
+    })(cksvg.DisplayObject);
+    cksvg.Image = Image;
+})(cksvg || (cksvg = {}));
+/**
  * Created by Chack on 2015/3/14.
  */
 ///<reference path="header/jquery.d.ts"/>

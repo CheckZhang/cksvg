@@ -59,6 +59,9 @@ text.x = 500;
 text.y = 20;
 stage.addChild(text);
 
+//image example
+var image = new cksvg.Image("http://jenkov.com/images/layout/top-bar-logo.png",340,340);
+stage.addChild(image);
 
 //group example
 var g = new cksvg.Group();

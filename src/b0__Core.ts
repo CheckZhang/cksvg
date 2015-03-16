@@ -31,7 +31,7 @@ module cksvg{
         "svgHref": XLINK_NS
     };
 
-    export function makeSVG(tag:string, attributes?:Object){
+    export function makeSVG(tag:string, attributes?:Object):Element{
         var elem = document.createElementNS(SVG_NS, tag);
         for (var attribute in attributes) {
             var name = (attribute in ATTR_MAP ? ATTR_MAP[attribute] : attribute);
