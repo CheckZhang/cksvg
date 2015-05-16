@@ -1,8 +1,10 @@
-/**
- * Created by Chack on 2015/3/14.
- */
 var cksvg;
 (function (cksvg) {
+    function supportsSvg() {
+        var svg = "http://www.w3.org/TR/SVG11/feature#Shape";
+        return document.implementation.hasFeature(svg, "1.0") || document.implementation.hasFeature(svg, "1.1");
+    }
+    cksvg.supportsSvg = supportsSvg;
     var formatRegExp = /\{(\d+)(:[^\}]+)?\}/g;
     function format(fmt) {
         var args = [];
@@ -48,12 +50,10 @@ var cksvg;
     }
     cksvg.makeSVG = makeSVG;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/14.
- */
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var DisplayObject = (function () {
@@ -66,13 +66,16 @@ var cksvg;
             this.scaleY = 1;
             this._matrix = mat2d.create();
             this._sumMatrix = mat2d.create();
+            this._localMatrix = null;
         }
         DisplayObject.prototype.render = function (gMatrix) {
             var matrix = mat2d.identity(this._matrix);
             mat2d.translate(matrix, matrix, vec2.fromValues(this.x, this.y));
             mat2d.rotate(matrix, matrix, this.rotation * Math.PI / 180);
             mat2d.scale(matrix, matrix, vec2.fromValues(this.scaleX, this.scaleY));
-            //if(gMatrix) mat2d.multiply(this._sumMatrix,gMatrix,this._matrix);
+            if (this._localMatrix) {
+                matrix = mat2d.multiply(matrix, matrix, this._localMatrix);
+            }
             this._$dom.attr({
                 transform: cksvg.format("matrix({0},{1},{2},{3},{4},{5})", this._matrix[0], this._matrix[1], this._matrix[2], this._matrix[3], this._matrix[4], this._matrix[5]),
                 opacity: this.opacity == 1 ? null : this.opacity
@@ -89,6 +92,14 @@ var cksvg;
                 this._matrix = x;
             }
         };
+        DisplayObject.prototype.localMatrix = function (x) {
+            if (x === void 0) {
+                return this._localMatrix;
+            }
+            else {
+                this._localMatrix = x;
+            }
+        };
         return DisplayObject;
     })();
     cksvg.DisplayObject = DisplayObject;
@@ -99,13 +110,10 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-/**
- * Created by Chack on 2015/3/14.
- */
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c0__DisplayObject.ts"/>
+///<reference path="c1__DisplayObject.ts"/>
 var cksvg;
 (function (cksvg) {
     var Container = (function (_super) {
@@ -119,6 +127,25 @@ var cksvg;
             this._children.push(d);
             this.numChildren = this._children.length;
             this._$dom.append(d.dom());
+            if (d.parent)
+                d.parent.removeChild(d);
+            d.parent = this;
+        };
+        Container.prototype.addChildAt = function (d, i) {
+            this._children.push(d);
+            if (i > this.numChildren - 1) {
+                this.addChild(d);
+                return;
+            }
+            else if (i < 0) {
+                i = 0;
+            }
+            d.dom().insertAfter(this._$dom.children().eq(i));
+            if (d.parent) {
+                d.parent.removeChild(d);
+            }
+            d.parent = this;
+            this.numChildren = this._children.length;
         };
         Container.prototype.removeChild = function (d) {
             var index = this.indexOf(d);
@@ -142,13 +169,10 @@ var cksvg;
     })(cksvg.DisplayObject);
     cksvg.Container = Container;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/14.
- */
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c1__Container.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Stage = (function (_super) {
@@ -172,13 +196,10 @@ var cksvg;
     })(cksvg.Container);
     cksvg.Stage = Stage;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/14.
- */
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c1__Container.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Polygon = (function (_super) {
@@ -187,17 +208,18 @@ var cksvg;
             _super.call(this);
             this._$dom = $(cksvg.makeSVG("polygon")).attr({ points: cksvg.formatPoints(points) }).css({ fill: fill, stroke: stroke, "stroke-width": strokeWidth });
         }
+        Polygon.prototype.setPoints = function (points) {
+            this._$dom.attr({ points: cksvg.formatPoints(points) });
+            return this;
+        };
         return Polygon;
     })(cksvg.DisplayObject);
     cksvg.Polygon = Polygon;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/14.
- */
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c1__Container.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Line = (function (_super) {
@@ -212,13 +234,10 @@ var cksvg;
     })(cksvg.DisplayObject);
     cksvg.Line = Line;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/14.
- */
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c1__Container.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Rect = (function (_super) {
@@ -232,13 +251,10 @@ var cksvg;
     })(cksvg.DisplayObject);
     cksvg.Rect = Rect;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/14.
- */
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c1__Container.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Circle = (function (_super) {
@@ -252,13 +268,10 @@ var cksvg;
     })(cksvg.DisplayObject);
     cksvg.Circle = Circle;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/14.
- */
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c1__Container.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Ellipse = (function (_super) {
@@ -272,13 +285,10 @@ var cksvg;
     })(cksvg.DisplayObject);
     cksvg.Ellipse = Ellipse;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/14.
- */
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c1__Container.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Polyline = (function (_super) {
@@ -293,9 +303,10 @@ var cksvg;
     })(cksvg.DisplayObject);
     cksvg.Polyline = Polyline;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/15.
- */
+///<reference path="header/jquery.d.ts"/>
+///<reference path="header/glmatrix.d.ts"/>
+///<reference path="b0__Core.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Text = (function (_super) {
@@ -309,9 +320,10 @@ var cksvg;
     })(cksvg.DisplayObject);
     cksvg.Text = Text;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/15.
- */
+///<reference path="header/jquery.d.ts"/>
+///<reference path="header/glmatrix.d.ts"/>
+///<reference path="b0__Core.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Group = (function (_super) {
@@ -324,9 +336,10 @@ var cksvg;
     })(cksvg.Container);
     cksvg.Group = Group;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/16.
- */
+///<reference path="header/jquery.d.ts"/>
+///<reference path="header/glmatrix.d.ts"/>
+///<reference path="b0__Core.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Image = (function (_super) {
@@ -341,13 +354,10 @@ var cksvg;
     })(cksvg.DisplayObject);
     cksvg.Image = Image;
 })(cksvg || (cksvg = {}));
-/**
- * Created by Chack on 2015/3/14.
- */
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c1__Container.ts"/>
+///<reference path="c0__Container.ts"/>
 var cksvg;
 (function (cksvg) {
     var Path = (function (_super) {
