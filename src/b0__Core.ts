@@ -2,8 +2,12 @@
  * Created by Chack on 2015/3/14.
  */
 module cksvg{
+    export function supportsSvg():boolean {
+        var svg = "http://www.w3.org/TR/SVG11/feature#Shape";
+        return document.implementation.hasFeature(svg, "1.0")||document.implementation.hasFeature(svg, "1.1");
+    }
     var formatRegExp = /\{(\d+)(:[^\}]+)?\}/g;
-    export function format(fmt:string,...args):string{
+    export function format(fmt:string,...args:any[]):string{
         var values = arguments;
         return fmt.replace(formatRegExp, function(match, index, placeholderFormat) {
             var value = values[parseInt(index, 10) + 1];

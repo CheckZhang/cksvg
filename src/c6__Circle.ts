@@ -4,7 +4,7 @@
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c1__Container.ts"/>
+///<reference path="c0__Container.ts"/>
 module cksvg{
     export class Circle extends cksvg.DisplayObject{
         constructor(r:number,cx:number,cy:number,fill:string="#BBBBBB",stroke?:string,strokeWidth?:number){

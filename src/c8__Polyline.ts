@@ -4,7 +4,7 @@
 ///<reference path="header/jquery.d.ts"/>
 ///<reference path="header/glmatrix.d.ts"/>
 ///<reference path="b0__Core.ts"/>
-///<reference path="c1__Container.ts"/>
+///<reference path="c0__Container.ts"/>
 module cksvg{
     export class Polyline extends DisplayObject{
         constructor(points:number[][],fill:string="none",stroke:string="red",strokeWidth?:number){
